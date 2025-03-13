@@ -178,7 +178,7 @@ const verifyOtp = () => {
     otpVerified.value = true
     showOtpModal.value = false
     errorMsg.value = ''
-    setCookie('otpVerified', 'true', 300) // 5分钟内无需再次验证
+    setCookie('otpVerified', 'true', 86400) // 5分钟内无需再次验证
   } else {
     errorMsg.value = '验证码错误，请重新输入'
   }
@@ -343,6 +343,7 @@ const backgroundStyle = {
 
 /* 左上角组织名称 */
 .organization-name {
+  color: #000000;
   position: absolute;
   top: 10px;
   left: 10px;
