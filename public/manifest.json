@@ -36,8 +36,8 @@
     {
       "subject": "化学",
       "start_time": 1741915200,
-      "end_time": 1741918800,
-      "duration": 60,
+      "end_time": 1741918200,
+      "duration": 50,
       "reminders": [
         {
           "time_left": 10,
@@ -48,9 +48,9 @@
     },
     {
       "subject": "数学",
-      "start_time": 1741920000,
+      "start_time": 1741919400,
       "end_time": 1741924800,
-      "duration": 80,
+      "duration": 90,
       "reminders": [
         {
           "time_left": 10,
