@@ -38,9 +38,14 @@
         {{ manifest?.exam_name }}
       </div>
 
-      <!-- 全局公告（较浅颜色） -->
+      <!-- 全局公告（调整样式：字体更大、颜色对比鲜明） -->
       <div class="global-announcement semi-transparent">
         {{ manifest?.general_announcement }}
+      </div>
+
+      <!-- 当前考试公告（放在全局公告下方，仅在有当前考试时显示） -->
+      <div v-if="currentExam" class="exam-announcement semi-transparent">
+        <strong>当前科目公告：</strong> {{ currentExam.announcement }}
       </div>
 
       <!-- 主体布局：左侧（包含时钟和科目信息） / 右侧考试科目列表 -->
@@ -53,16 +58,12 @@
               {{ formattedCurrentTime }}
             </div>
           </div>
-          <!-- 科目信息 -->
+          <!-- 科目信息（已去掉公告部分） -->
           <div class="subject-info">
             <h3 v-if="currentExam">
               当前科目：{{ currentExam.subject }}
             </h3>
             <h3 v-else>课间休息中</h3>
-            <!-- 当前科目的公告 -->
-            <div v-if="currentExam">
-              <strong>公告：</strong> {{ currentExam.announcement }}
-            </div>
             <!-- 考试时间 -->
             <div>
               <strong>考试时间：</strong>
@@ -142,13 +143,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeMount, onMounted, onUnmounted } from 'vue'
-import { generateTOTP } from '~/utils/totp'
+import {ref, computed, onBeforeMount, onMounted, onUnmounted} from 'vue'
+import {generateTOTP} from '~/utils/totp'
 
 // 格式化当前时间，精确到秒
 const formattedCurrentTime = computed(() => {
   const date = new Date(currentTime.value * 1000)
-  return date.toLocaleTimeString('zh-CN', { hour12: false })
+  return date.toLocaleTimeString('zh-CN', {hour12: false})
 })
 
 /** 判断是否在客户端（避免 SSR 时操作 window） */
@@ -159,6 +160,7 @@ function setCookie(name, value, seconds) {
   if (!isClient) return
   document.cookie = `${name}=${value}; max-age=${seconds}; path=/`
 }
+
 function getCookie(name) {
   if (!isClient) return null
   const value = `; ${document.cookie}`
@@ -178,7 +180,7 @@ const verifyOtp = () => {
     otpVerified.value = true
     showOtpModal.value = false
     errorMsg.value = ''
-    setCookie('otpVerified', 'true', 86400) // 5分钟内无需再次验证
+    setCookie('otpVerified', 'true', 86400) // 1天内无需再次验证
   } else {
     errorMsg.value = '验证码错误，请重新输入'
   }
@@ -265,7 +267,7 @@ const statusClass = (exam) => {
 // 时间格式化
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
-  return date.toLocaleTimeString('zh-CN', { hour12: false })
+  return date.toLocaleTimeString('zh-CN', {hour12: false})
 }
 const formatDuration = (seconds) => {
   if (seconds < 0) seconds = 0
@@ -343,7 +345,7 @@ const backgroundStyle = {
 
 /* 左上角组织名称 */
 .organization-name {
-  color: #000000;
+  color: #000;
   position: absolute;
   top: 10px;
   left: 10px;
@@ -359,10 +361,18 @@ const backgroundStyle = {
   margin-bottom: 10px;
 }
 
-/* 全局公告 */
+/* 全局公告 - 样式调整：字体变大、颜色鲜明 */
 .global-announcement {
-  font-size: 18px;
-  color: #ccc;
+  font-size: 24px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 当前考试公告 */
+.exam-announcement {
+  font-size: 20px;
+  color: #fff;
   text-align: center;
   margin-bottom: 20px;
 }
@@ -389,12 +399,14 @@ const backgroundStyle = {
   display: flex;
   flex-direction: column;
 }
+
 .clock-container {
   text-align: center;
   margin-bottom: 10px;
 }
+
 .big-clock {
-  font-size: 48px;
+  font-size: 96px;
   font-weight: bold;
 }
 
@@ -404,10 +416,12 @@ const backgroundStyle = {
   font-size: 16px;
   overflow-y: auto;
 }
+
 .right-panel .exam-list table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .right-panel .exam-list th,
 .right-panel .exam-list td {
   padding: 8px 12px;
@@ -430,18 +444,21 @@ const backgroundStyle = {
   padding: 2px 6px;
   border-radius: 4px;
 }
+
 .status-ongoing {
   color: green;
   background-color: #d0f0c0; /* 浅绿色 */
   padding: 2px 6px;
   border-radius: 4px;
 }
+
 .status-ended {
   color: red;
   background-color: #f8d7da; /* 浅红色 */
   padding: 2px 6px;
   border-radius: 4px;
 }
+
 .status-rest {
   color: #fff;
   background-color: #333;
@@ -476,6 +493,7 @@ const backgroundStyle = {
   pointer-events: none;
   z-index: 1000;
 }
+
 @keyframes flashExpand {
   0% {
     width: 0;
