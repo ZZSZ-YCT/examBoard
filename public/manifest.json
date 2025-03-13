@@ -1,0 +1,93 @@
+{
+  "exam_name": "中考一模摸底测试",
+  "general_announcement": "当前为英才二班考场,考号为:1202+您的座号,注意考号填涂",
+  "organization_name": "英才二班",
+  "exams": [
+    {
+      "subject": "物理",
+      "start_time": 1741869000,
+      "end_time": 1741876170,
+      "duration": 60,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查"
+        }
+      ],
+      "announcement": "注意计算"
+    },
+    {
+      "subject": "语文",
+      "start_time": 1741908000,
+      "end_time": 1741914000,
+      "duration": 100,
+      "reminders": [
+        {
+          "time_left": 40,
+          "message": "剩余40分钟,请尽快完成非作文题目"
+        },
+        {
+          "time_left": 30,
+          "message": "剩余30分钟,请没有开始作文的同学立即开始作文"
+        }
+      ],
+      "announcement": "语文考试请注意字体"
+    },
+    {
+      "subject": "化学",
+      "start_time": 1741915200,
+      "end_time": 1741918800,
+      "duration": 60,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "保持冷静，认真答题。"
+    },
+    {
+      "subject": "数学",
+      "start_time": 1741920000,
+      "end_time": 1741924800,
+      "duration": 80,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "数学考试，请带好草稿纸。"
+    },
+    {
+      "subject": "英语",
+      "start_time": 1741933200,
+      "end_time": 1741938600,
+      "duration": 90,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "英语考试，请注意提前阅读听力试题。"
+    },
+    {
+      "subject": "政治&历史",
+      "start_time": 1741939800,
+      "end_time": 1741947600,
+      "duration": 130,
+      "reminders": [
+        {
+          "time_left": 70,
+          "message": "政治考试剩余10分钟,请再次检查,没写完的加快进度"
+        },
+        {
+          "time_left": 10,
+          "message": "历史考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "开卷考试,请带好资料"
+    }
+  ]
+}
