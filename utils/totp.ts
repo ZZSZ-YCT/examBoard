@@ -1,4 +1,4 @@
-// noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols,JSUnusedAssignment,JSBitwiseOperatorUsage
+// utils/totp.ts
 
 /**
  * 该模块封装了 SJCL 的完整实现和 TOTP 算法。
@@ -13,19 +13,19 @@ const sjcl: any = {
     misc: {},
     codec: {},
     exception: {
-        corrupt: function (this: any, a: string) {
+        corrupt: function(a: string) {
             this.toString = () => "CORRUPT: " + this.message;
             this.message = a;
         },
-        invalid: function (this: any, a: string) {
+        invalid: function(a: string) {
             this.toString = () => "INVALID: " + this.message;
             this.message = a;
         },
-        bug: function (this: any, a: string) {
+        bug: function(a: string) {
             this.toString = () => "BUG: " + this.message;
             this.message = a;
         },
-        notReady: function (this: any, a: string) {
+        notReady: function(a: string) {
             this.toString = () => "NOT READY: " + this.message;
             this.message = a;
         }
@@ -222,9 +222,10 @@ sjcl.hash.sha1.prototype = {
 };
 
 function n(a: any, b: number[]): void {
-    let c: number, d: number;
-    const l = b.slice(0);
-    const h = a.d;
+    let c: number, d: number, e: number;
+    let g: number, f: number, k: number, m: number;
+    let l = b.slice(0);
+    let h = a.d;
     let e0 = h[0], g0 = h[1], f0 = h[2], k0 = h[3], m0 = h[4];
     for (c = 0; c <= 79; c++) {
         if (c >= 16) {
