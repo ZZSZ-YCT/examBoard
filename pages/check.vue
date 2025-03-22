@@ -1,6 +1,8 @@
 <template>
+  <!-- 整个页面始终显示背景 -->
   <div class="check-container">
-    <v-dialog v-model="showOtpModal" persistent max-width="400">
+    <!-- loading 为 false 且需要输入验证码时显示弹窗 -->
+    <v-dialog v-if="!loading && showOtpModal" v-model="showOtpModal" persistent max-width="400">
       <v-card>
         <v-card-title>请输入验证码</v-card-title>
         <v-card-text>
@@ -24,14 +26,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-const showOtpModal = ref(true)
+// loading 为 true 时，页面仅显示背景
+const loading = ref(true)
+const showOtpModal = ref(false)
 const otpInput = ref('')
 const errorMsg = ref('')
 
 // 从 runtimeConfig 获取公开的验证码有效期
 const validTime = useRuntimeConfig().public.NUXT_VAILD_TIME
+
+// 检查 cookie 中 otpVerified 状态
+const checkOtpVerified = () => {
+  const cookies = document.cookie.split(';').map(item => item.trim())
+  const otpCookie = cookies.find(cookie => cookie.startsWith('otpVerified='))
+  if (otpCookie && otpCookie.split('=')[1] === 'true') {
+    return true
+  }
+  return false
+}
+
+onMounted(() => {
+  if (checkOtpVerified()) {
+    // 如果已验证，直接跳转到根路径
+    window.location.href = '/'
+  } else {
+    // 否则显示验证码弹窗，并取消 loading 状态
+    showOtpModal.value = true
+    loading.value = false
+  }
+})
 
 const verifyOtp = async () => {
   try {
@@ -61,8 +86,9 @@ const verifyOtp = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: url('./background.jpg') no-repeat center center / cover;
+  background: url('./background.png') no-repeat center center / cover;
 }
+
 .error-msg {
   color: red;
   margin-top: 10px;
