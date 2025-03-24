@@ -653,7 +653,7 @@ html, body {
 }
 .flash-overlay .flash-text {
   color: white;
-  font-size: 48px;
+  font-size: 52px;
   animation: flashText 2s linear 0s 3;
 }
 .flash-top {
@@ -663,7 +663,7 @@ html, body {
   transform: translate(-50%, 0);
   background: red;
   color: white;
-  font-size: 24px;
+  font-size: 38px;
   display: inline-block;
   padding: 10px 20px;
   border-radius: 10px;
