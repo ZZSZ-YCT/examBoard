@@ -1,26 +1,13 @@
 {
   "exam_name": "2025中招第一次适应性测试",
-  "general_announcement": "本场考试已结束,2025中招第一次适应性测试 考试数据未配置",
+  "general_announcement": "本次考试为 河南省郑州市2025年度中招第一次适应性测试",
   "organization_name": "英才2班",
   "exams": [
     {
-      "subject": "物理",
-      "start_time": 1741869000,
-      "end_time": 1741876170,
-      "duration": 60,
-      "reminders": [
-        {
-          "time_left": 10,
-          "message": "考试剩余10分钟,请再次检查"
-        }
-      ],
-      "announcement": "注意计算"
-    },
-    {
       "subject": "语文",
-      "start_time": 1741908000,
-      "end_time": 1741914000,
-      "duration": 100,
+      "start_time": 1742862000,
+      "end_time": 1742869200,
+      "duration": 120,
       "reminders": [
         {
           "time_left": 40,
@@ -31,12 +18,39 @@
           "message": "剩余30分钟,请没有开始作文的同学立即开始作文"
         }
       ],
-      "announcement": "语文考试请注意字体"
+      "announcement": "语文考试请注意书写"
+    },
+    {
+      "subject": "历史(开卷)",
+      "start_time": 1742871600,
+      "end_time": 1742875200,
+      "duration": 60,
+      "reminders": [
+        {
+          "time_left": 15,
+          "message": "考试剩余15分钟,请注意"
+        }
+      ],
+      "announcement": "保持冷静，认真答题。",
+      "pre_announcement": "开卷考试请携带好开卷资料"
+    },
+    {
+      "subject": "物理",
+      "start_time": 1742886000,
+      "end_time": 1742889600,
+      "duration": 60,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "物理考试请注意计算,保持冷静,认真答题."
     },
     {
       "subject": "化学",
-      "start_time": 1741915200,
-      "end_time": 1741918200,
+      "start_time": 1742892600,
+      "end_time": 1742895600,
       "duration": 50,
       "reminders": [
         {
@@ -44,50 +58,47 @@
           "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
         }
       ],
-      "announcement": "保持冷静，认真答题。"
+      "announcement": "化学考试请注意时间和计算准确,保持冷静,认真答题."
     },
     {
       "subject": "数学",
-      "start_time": 1741919400,
-      "end_time": 1741924800,
-      "duration": 90,
+      "start_time": 1742948400,
+      "end_time": 1742954400,
+      "duration": 100,
       "reminders": [
         {
           "time_left": 10,
           "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
         }
       ],
-      "announcement": "数学考试，请带好草稿纸。"
+      "announcement": "注意计算,保持冷静,认真答题."
     },
     {
-      "subject": "英语",
-      "start_time": 1741933200,
-      "end_time": 1741938600,
-      "duration": 90,
+      "subject": "政治(开卷)",
+      "start_time": 1742957400,
+      "end_time": 1742961000,
+      "duration": 60,
       "reminders": [
-        {
-          "time_left": 10,
-          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
-        }
-      ],
-      "announcement": "英语考试，请注意提前阅读听力试题。"
-    },
-    {
-      "subject": "政治&历史",
-      "start_time": 1741939800,
-      "end_time": 1741947600,
-      "duration": 130,
-      "reminders": [
-        {
-          "time_left": 70,
-          "message": "政治考试剩余10分钟,请再次检查,没写完的加快进度"
-        },
         {
           "time_left": 10,
           "message": "历史考试剩余10分钟,请再次检查,没写完的加快进度"
         }
       ],
-      "announcement": "开卷考试,请带好资料"
+      "pre_announcement": "开卷考试,请带好资料",
+      "announcement": "保持冷静，认真答题。"
+    },
+    {
+      "subject": "英语",
+      "start_time": 1742972400,
+      "end_time": 1742978400,
+      "duration": 100,
+      "reminders": [
+        {
+          "time_left": 10,
+          "message": "考试剩余10分钟,请再次检查,没写完的加快进度"
+        }
+      ],
+      "announcement": "请注意提前阅读听力试题。"
     }
   ]
 }
