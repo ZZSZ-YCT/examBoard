@@ -33,7 +33,8 @@ export default defineNuxtConfig({
     NUXT_OTP_SECRET: process.env.NUXT_OTP_SECRET || "GM5K4A36OEOG7IVPD6BXEDCCE5G4NAU4",
     public: {
       // 客户端公开变量（单位：秒）
-      NUXT_VALID_TIME: Number(process.env.NUXT_VALID_TIME) || 86400
+      NUXT_VALID_TIME: Number(process.env.NUXT_VALID_TIME) || 86400,
+      NUXT_SKIP_LOGIN: process.env.NUXT_SKIP_LOGIN === 'true' || false,
     }
   },
 

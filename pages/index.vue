@@ -1,15 +1,14 @@
 <template>
   <div class="dashboard" :style="backgroundStyle">
-    <!-- 在 cookie 校验前，只显示背景 -->
+    <!-- Cookie 校验前仅显示背景 -->
     <template v-if="cookieChecked">
       <div class="exam-board">
-
-        <!-- 考试名称（最上方） -->
+        <!-- 顶部考试名称 -->
         <div class="exam-title semi-transparent">
           {{ manifest?.organization_name }} - {{ manifest?.exam_name }}
         </div>
 
-        <!-- 全局公告（包含大公告和科目公告，均增大字体） -->
+        <!-- 全局公告 -->
         <div class="global-announcement semi-transparent">
           {{ manifest?.general_announcement }}
           <div v-if="displayedAnnouncement" class="exam-announcement">
@@ -17,14 +16,14 @@
           </div>
         </div>
 
-        <!-- 当所有考试都结束时，隐藏左右两侧内容，显示统一提示 -->
+        <!-- 所有考试结束提示 -->
         <div v-if="allExamsEnded" class="all-ended-message">
           所有考试已结束
         </div>
         <template v-else>
-          <!-- 主体布局：左侧（包含时钟和科目信息） / 右侧考试科目列表 -->
+          <!-- 主体布局：左侧（时钟与详情） / 右侧（考试科目列表） -->
           <div class="content-row">
-            <!-- 左侧：包含时钟和科目信息 -->
+            <!-- 左侧面板 -->
             <div class="left-panel semi-transparent">
               <div class="clock-container">
                 <div class="big-clock">
@@ -32,93 +31,84 @@
                 </div>
               </div>
               <div class="subject-info">
-                <!-- 当天没有其他考试时，隐藏详细信息，显示提示 -->
-                <h3 v-if="currentExam">
-                  当前科目：{{ currentExam.subject }}
-                </h3>
-                <h3 v-else-if="isTodayEnded">
-                  当天考试已结束
-                </h3>
-                <h3 v-else>
-                  课间休息中
-                </h3>
-                <!-- 仅当天考试未结束时显示考试时间、状态和剩余时间 -->
-                <template v-if="!isTodayEnded">
-                  <!-- 考试时间：仅显示时间，不显示日期 -->
-                  <div v-if="currentExam || nextExam">
+                <h3 v-if="currentExam">当前科目：{{ currentExam.subject }}</h3>
+                <h3 v-else-if="waitingForExam">所有考试尚未开始</h3>
+                <h3 v-else-if="isTodayEnded">当天考试已结束</h3>
+                <h3 v-else>课间休息</h3>
+                <!-- 正在考试时显示详情 -->
+                <template v-if="currentExam">
+                  <div>
                     <strong>考试时间：</strong>
-                    <span v-if="currentExam">
+                    <span>
                       {{ formatTimeOnly(currentExam.start_time) }} - {{ formatTimeOnly(currentExam.end_time) }}
-                    </span>
-                    <span v-else-if="nextExam">
-                      {{ formatTimeOnly(nextExam.start_time) }} - {{ formatTimeOnly(nextExam.end_time) }}
-                    </span>
-                    <span v-else>--</span>
-                  </div>
-                  <!-- 新增显示携带日期的开始时间和结束时间 -->
-                  <div v-if="currentExam || nextExam">
-                    <strong>开始日期时间：</strong>
-                    <span v-if="currentExam">
-                      {{ formatTime(currentExam.start_time) }}
-                    </span>
-                    <span v-else-if="nextExam">
-                      {{ formatTime(nextExam.start_time) }}
-                    </span>
-                  </div>
-                  <div v-if="currentExam || nextExam">
-                    <strong>结束日期时间：</strong>
-                    <span v-if="currentExam">
-                      {{ formatTime(currentExam.end_time) }}
-                    </span>
-                    <span v-else-if="nextExam">
-                      {{ formatTime(nextExam.end_time) }}
                     </span>
                   </div>
                   <div>
+                    <strong>开始日期时间：</strong>
+                    <span>{{ formatTime(currentExam.start_time) }}</span>
+                  </div>
+                  <div>
+                    <strong>结束日期时间：</strong>
+                    <span>{{ formatTime(currentExam.end_time) }}</span>
+                  </div>
+                  <div>
                     <strong>考试状态：</strong>
-                    <span :class="statusClass(currentExam || nextExam)">
-                      {{ displayExamStatus }}
+                    <span :class="statusClass(currentExam)">
+                      {{ getExamStatus(currentExam) }}
                     </span>
                   </div>
                   <div>
                     <strong>剩余时间：</strong>
-                    <span v-if="currentExam">
-                      {{ formatDuration(currentExam.end_time - currentTime) }}
-                    </span>
-                    <span v-else-if="nextExam">
-                      {{ formatDuration(nextExam.start_time - currentTime) }}
-                    </span>
-                    <span v-else>--</span>
+                    <span>{{ formatDuration(currentExam.end_time - currentTime) }}</span>
+                  </div>
+                </template>
+                <!-- 无考试时显示详情 -->
+                <template v-else>
+                  <div class="left-details">
+                    <div><strong>考试时间：</strong><span>-</span></div>
+                    <div><strong>开始日期时间：</strong><span>-</span></div>
+                    <div><strong>结束日期时间：</strong><span>-</span></div>
+                    <div>
+                      <strong>考试状态：</strong>
+                      <span :class="waitingForExam ? statusClassForWaiting : 'status-break'">
+                        {{ waitingForExam ? "等待开始" : "课间休息" }}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>剩余时间：</strong>
+                      <span>{{ waitingForExam ? '-' : breakRemainingTime }}</span>
+                    </div>
                   </div>
                 </template>
               </div>
             </div>
 
-            <!-- 右侧：考试科目列表（所有内容居中显示） -->
+            <!-- 右侧面板：考试科目列表 -->
             <div class="right-panel semi-transparent">
               <h3>考试科目列表</h3>
               <div class="exam-list">
                 <table>
                   <thead>
-                  <tr>
-                    <th>科目</th>
-                    <th>开始时间</th>
-                    <th>结束时间</th>
-                    <th>状态</th>
-                  </tr>
+                    <tr>
+                      <th>科目</th>
+                      <th>开始时间</th>
+                      <th>结束时间</th>
+                      <th>状态</th>
+                    </tr>
                   </thead>
                   <tbody>
-                  <tr v-for="(exam, index) in manifest?.exams" :key="index">
-                    <!-- 为科目名称增加专门的 class 来调整字体及样式 -->
-                    <td class="subject-cell">{{ exam.subject }}</td>
-                    <td>{{ formatTime(exam.start_time) }}</td>
-                    <td>{{ formatTime(exam.end_time) }}</td>
-                    <td>
-                        <span :class="statusClass(exam)">
-                          {{ getExamStatus(exam) }}
+                    <tr v-for="(exam, index) in manifest?.exams" :key="index">
+                      <td class="subject-cell" :style="{ fontSize: subjectFontSize }">
+                        {{ exam.subject }}
+                      </td>
+                      <td>{{ formatTime(exam.start_time) }}</td>
+                      <td>{{ formatTime(exam.end_time) }}</td>
+                      <td>
+                        <span :class="statusClassForList(exam)">
+                          {{ getExamStatusForList(exam) }}
                         </span>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -126,13 +116,15 @@
           </div>
         </template>
 
-        <!-- 上方提醒消息 -->
-        <div v-if="flashMessage" class="flash-message">
-          {{ flashMessage }}
+        <!-- 通知提示区域 -->
+        <div v-if="flashActive">
+          <div v-if="flashPhase === 'full'" class="flash-overlay">
+            <div class="flash-text">{{ flashMessage }}</div>
+          </div>
+          <div v-else-if="flashPhase === 'top'" class="flash-top">
+            {{ flashMessage }}
+          </div>
         </div>
-
-        <!-- 红色全屏高亮动画 -->
-        <div v-if="flashActive" class="flash-overlay"></div>
 
         <!-- 底部版权信息 -->
         <div class="footer">
@@ -149,14 +141,12 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const cookieChecked = ref(false)
-// 检查 cookie（仅显示背景，其他内容待校验完毕后显示）
 function getCookie(name) {
   const value = document.cookie
   const parts = value.split(name + '=')
   if (parts.length === 2) return parts.pop().split(';').shift()
 }
 onBeforeMount(() => {
-  // 执行 cookie 校验
   if (!getCookie('otpVerified')) {
     router.push('/check')
   } else {
@@ -164,10 +154,12 @@ onBeforeMount(() => {
   }
 })
 
-// 背景样式：始终铺满整个视窗
+// 背景样式（自适应）
 const backgroundStyle = {
   background: "url('./background.png') no-repeat center center / cover",
   minHeight: "100vh",
+  width: "100vw",
+  overflow: "hidden",
   position: "relative"
 }
 
@@ -187,29 +179,108 @@ onBeforeMount(async () => {
   }
 })
 
+// 封装 sessionStorage 访问函数，确保只在客户端使用
+function loadTriggeredReminders() {
+  if (typeof window === 'undefined') return new Set();
+  const stored = sessionStorage.getItem('triggeredReminders');
+  return stored ? new Set(JSON.parse(stored)) : new Set();
+}
+
+function saveTriggeredReminders() {
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem('triggeredReminders', JSON.stringify(Array.from(triggeredReminders.value)));
+  }
+}
+
+const triggeredReminders = ref(loadTriggeredReminders());
+
+// 在 onMounted 钩子中（客户端环境）你可以安全地使用 sessionStorage
+onMounted(() => {
+  // 例如：更新 currentTime、检查提醒等...
+  console.log("当前已触发的提醒：", triggeredReminders.value);
+});
+
 // 当前时间与定时器
 const currentTime = ref(Math.floor(Date.now() / 1000))
+const manualTime = ref(false)
 let timerInterval = null
+let previousExam = null
+const pageLoaded = ref(false)
+
 onMounted(() => {
+  pageLoaded.value = true
   timerInterval = setInterval(() => {
-    currentTime.value = Math.floor(Date.now() / 1000)
+    if (!manualTime.value) {
+      currentTime.value = Math.floor(Date.now() / 1000)
+    }
     checkReminders()
+    if (currentExam.value) {
+      if (!triggeredReminders.value.has(currentExam.value.subject + '_start')) {
+        triggeredReminders.value.add(currentExam.value.subject + '_start')
+        saveTriggeredReminders()
+        // 考试开始提示，展示 5 秒
+        triggerFlash("考试开始，请考生开始作答", 5)
+      }
+    } else if (previousExam && !triggeredReminders.value.has(previousExam.subject + '_end')) {
+      triggeredReminders.value.add(previousExam.subject + '_end')
+      saveTriggeredReminders()
+      // 考试结束提示，展示 5 秒
+      triggerFlash("考试结束，请监考员收卷", 5)
+    }
+    previousExam = currentExam.value
   }, 1000)
-  if (typeof window !== 'undefined') {
-    window.testReminder = () => {
-      triggerFlash('测试提醒效果')
+
+  if (getCookie("AdminDebug") === "debuging") {
+    console.log("已开启调试模式，可使用调试指令。输入 help() 查看指令列表。")
+    window.startNow = () => {
+      if (waitingForExam.value && manifest.value && manifest.value.exams.length > 0) {
+        manifest.value.exams[0].start_time = currentTime.value
+        console.log("startNow：第一场考试已强制开始。")
+      } else {
+        console.log("startNow：当前已有考试进行中，无法强制开始。")
+      }
+    }
+    window.endNow = () => {
+      if (currentExam.value) {
+        currentExam.value.end_time = currentTime.value
+        console.log("endNow：当前考试已强制结束，系统将切换到下一场考试。")
+      } else {
+        console.log("endNow：当前没有正在进行的考试。")
+      }
+    }
+    window.testAlart = () => {
+      triggerFlash("测试提示", 5)
+      console.log("testAlart：已触发测试提示。")
+    }
+    window.SetTime = (timestamp) => {
+      manualTime.value = true
+      currentTime.value = timestamp
+      console.log("SetTime：当前时间已设置为 " + new Date(timestamp * 1000).toLocaleString('zh-CN', { hour12: false }))
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        timerInterval = null
+      }
+    }
+    window.help = () => {
+      console.log("调试指令列表：")
+      console.log(" startNow  —— 立即开始考试（若考试尚未开始）")
+      console.log(" endNow    —— 立即结束当前考试，并切换到下一场考试")
+      console.log(" testAlart —— 触发一次测试提示")
+      console.log(" SetTime   —— 设置当前时间戳，例如：SetTime(秒级时间戳)")
+      console.log(" help      —— 列出所有调试指令")
     }
   }
 })
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
 })
+
 const formattedCurrentTime = computed(() => {
   const date = new Date(currentTime.value * 1000)
   return date.toLocaleTimeString('zh-CN', { hour12: false })
 })
 
-// 修改格式化时间函数，显示日期和星期
+// 时间格式化函数
 const formatTime = (timestamp) => {
   const date = new Date(timestamp * 1000)
   return date.toLocaleString('zh-CN', {
@@ -223,13 +294,10 @@ const formatTime = (timestamp) => {
     hour12: false
   })
 }
-
-// 新增格式化函数，仅显示时间
 const formatTimeOnly = (timestamp) => {
   const date = new Date(timestamp * 1000)
   return date.toLocaleTimeString('zh-CN', { hour12: false })
 }
-
 const formatDuration = (seconds) => {
   if (seconds < 0) seconds = 0
   const m = Math.floor(seconds / 60)
@@ -237,7 +305,7 @@ const formatDuration = (seconds) => {
   return `${m}分${s}秒`
 }
 
-// 计算当前考试和下一个考试
+// 当前考试与下一场考试计算
 const currentExam = computed(() => {
   if (!manifest.value || !manifest.value.exams) return null
   return manifest.value.exams.find(exam => exam.start_time <= currentTime.value && exam.end_time > currentTime.value)
@@ -247,60 +315,84 @@ const nextExam = computed(() => {
   return manifest.value.exams.find(exam => exam.start_time > currentTime.value)
 })
 
-// 判断当天是否全部结束
+// 判断当天考试是否全部结束
 const isTodayEnded = computed(() => {
   if (!manifest.value || !manifest.value.exams) return false
   const today = new Date(currentTime.value * 1000).toDateString()
   const todayExams = manifest.value.exams.filter(exam => new Date(exam.start_time * 1000).toDateString() === today)
   return todayExams.length > 0 && todayExams.every(exam => exam.end_time <= currentTime.value)
 })
-// 判断所有考试是否全部结束
 const allExamsEnded = computed(() => {
   return manifest.value &&
-      manifest.value.exams.length > 0 &&
-      manifest.value.exams.every(exam => exam.end_time <= currentTime.value)
+         manifest.value.exams.length > 0 &&
+         manifest.value.exams.every(exam => exam.end_time <= currentTime.value)
+})
+const waitingForExam = computed(() => {
+  if (!manifest.value || !manifest.value.exams || manifest.value.exams.length === 0) return false
+  const firstExamStart = manifest.value.exams[0].start_time
+  return currentTime.value < firstExamStart
+})
+const isBreak = computed(() => {
+  return !currentExam.value && !waitingForExam.value && manifest.value && manifest.value.exams.length > 0 && !allExamsEnded.value
 })
 
-// 考试状态判断及样式
+// 考试状态与样式函数
 const getExamStatus = (exam) => {
-  if (!exam) return '休息中'
-  if (currentTime.value < exam.start_time) return '未开始'
+  if (!exam) return waitingForExam.value ? '等待开始' : '课间休息'
+  if (currentTime.value < exam.start_time) return waitingForExam.value ? '等待开始' : '未开始'
   if (currentTime.value >= exam.start_time && currentTime.value < exam.end_time) return '进行中'
   return '已结束'
 }
 const statusClass = (exam) => {
   const st = getExamStatus(exam)
   switch (st) {
-    case '未开始':
-      return 'status-notstarted'
+    case '等待开始':
+      return 'status-waiting'
     case '进行中':
       return 'status-ongoing'
     case '已结束':
       return 'status-ended'
     default:
-      return 'status-rest'
+      return 'status-notstarted'
   }
 }
-
-// 新增 computed：考试状态显示逻辑
-const displayExamStatus = computed(() => {
-  if (currentExam.value) {
-    return getExamStatus(currentExam.value)
+const statusClassForWaiting = computed(() => {
+  return waitingForExam.value ? 'status-waiting' : 'status-notstarted'
+})
+const breakRemainingTime = computed(() => {
+  if (nextExam.value) {
+    return formatDuration(nextExam.value.start_time - currentTime.value)
   } else {
-    if (isTodayEnded.value) {
-      return "当天考试已结束"
-    } else {
-      return "已结束"
-    }
+    return '-'
   }
 })
+const isExamToday = (exam) => {
+  return new Date(exam.start_time * 1000).toDateString() === new Date(currentTime.value * 1000).toDateString()
+}
+const getExamStatusForList = (exam) => {
+  if (currentTime.value >= exam.start_time && currentTime.value < exam.end_time) return '进行中'
+  if (currentTime.value >= exam.end_time) return '已结束'
+  if (!isExamToday(exam)) return '未开始'
+  const remaining = exam.start_time - currentTime.value
+  return remaining > 1200 ? '准备开始' : '即将开始'
+}
+const statusClassForList = (exam) => {
+  const status = getExamStatusForList(exam)
+  if (status === '进行中') return 'status-ongoing'
+  else if (status === '已结束') return 'status-ended'
+  else if (status === '等待开始') return 'status-waiting'
+  else if (status === '未开始') return 'status-notstarted'
+  else if (status === '准备开始') return 'status-notstarted'
+  else if (status === '即将开始') return 'status-imminent'
+  else return 'status-waiting'
+}
 
-// 新增 computed：公告逻辑
+// 公告逻辑
 const announcementLabel = computed(() => {
-  if (currentExam.value) {
+  if (currentExam.value || waitingForExam.value) {
     return "当前科目公告："
   } else if (nextExam.value) {
-    return "下一个科目公告："
+    return "下一科目公告："
   } else {
     return ""
   }
@@ -308,46 +400,79 @@ const announcementLabel = computed(() => {
 const displayedAnnouncement = computed(() => {
   if (currentExam.value) {
     return currentExam.value.announcement || ''
+  } else if (waitingForExam.value && manifest.value && manifest.value.exams.length > 0) {
+    return manifest.value.exams[0].pre_announcement || ''
   } else if (nextExam.value) {
-    return nextExam.value.announcement || ''
+    return nextExam.value.pre_announcement || ''
   } else {
     return ''
   }
 })
 
-// 提醒功能
-const flashActive = ref(false)
-const flashMessage = ref('')
-const triggeredReminders = ref(new Set())
-
+// 提醒逻辑：在“考试结束时间减去预设剩余时间”到该时刻后10秒内，只要处于该区间就触发提醒（且同一提醒只触发一次）
 const checkReminders = () => {
   if (!currentExam.value || !currentExam.value.reminders) return
-  const remaining = currentExam.value.end_time - currentTime.value
   currentExam.value.reminders.forEach(reminder => {
     const key = currentExam.value.subject + '_' + reminder.time_left
-    if (remaining <= reminder.time_left * 60 && !triggeredReminders.value.has(key)) {
-      triggeredReminders.value.add(key)
-      triggerFlash(reminder.message)
+    const triggerMoment = currentExam.value.end_time - reminder.time_left * 60
+    if (currentTime.value >= triggerMoment && currentTime.value <= triggerMoment + 10) {
+      if (!triggeredReminders.value.has(key)) {
+        triggeredReminders.value.add(key)
+        saveTriggeredReminders()
+        triggerFlash(reminder.message, 30)
+      }
     }
   })
 }
 
-const triggerFlash = (message) => {
+// 通知提示函数：先全屏闪动3次（每次2秒，共6秒），再缩小至顶部显示
+let flashFullTimeout = null
+let flashTopTimeout = null
+const clearFlashTimeouts = () => {
+  if (flashFullTimeout) {
+    clearTimeout(flashFullTimeout)
+    flashFullTimeout = null
+  }
+  if (flashTopTimeout) {
+    clearTimeout(flashTopTimeout)
+    flashTopTimeout = null
+  }
+}
+const flashActive = ref(false)
+const flashMessage = ref('')
+const flashPhase = ref('')  // 'full'：全屏闪动；'top'：顶部提示
+const triggerFlash = (message, displayTime) => {
+  clearFlashTimeouts()
+  flashActive.value = false
+  flashMessage.value = ''
+  flashPhase.value = ''
   flashMessage.value = message
   flashActive.value = true
-  // 红色全屏高亮动画显示 3 秒
-  setTimeout(() => {
+  flashPhase.value = 'full'
+  flashFullTimeout = setTimeout(() => {
+    flashPhase.value = 'top'
+  }, 6000)
+  flashTopTimeout = setTimeout(() => {
     flashActive.value = false
-  }, 3000)
-  // 提醒消息保持 30 秒
-  setTimeout(() => {
     flashMessage.value = ''
-  }, 30000)
+    flashPhase.value = ''
+  }, 6000 + displayTime * 1000)
 }
+
+// 根据考试数量调整科目名称字号
+const subjectFontSize = computed(() => {
+  const count = manifest.value && manifest.value.exams ? manifest.value.exams.length : 0
+  if (count > 5) {
+    let size = 40 - (count - 5) * 2
+    size = size < 20 ? 20 : size
+    return size + 'px'
+  } else {
+    return '40px'
+  }
+})
 </script>
 
 <style scoped>
-/* 整体铺满屏幕 */
 html, body {
   width: 100%;
   height: 100%;
@@ -361,6 +486,7 @@ html, body {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  overflow-x: hidden;
 }
 .semi-transparent {
   background: rgba(255, 255, 255, 0.15);
@@ -370,37 +496,33 @@ html, body {
   box-sizing: border-box;
 }
 .exam-board {
+  max-width: 100vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
-}
-.organization-name {
-  color: #000;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 16px;
-  font-weight: bold;
+  overflow: hidden;
 }
 .exam-title {
   font-size: 32px;
   font-weight: bold;
   text-align: center;
   margin-bottom: 10px;
+  word-break: break-word;
 }
 .global-announcement {
   font-size: 28px;
-  color: #fff;
   text-align: center;
   margin-bottom: 20px;
+  word-break: break-word;
 }
 .exam-announcement {
   font-size: 24px;
-  color: #fff;
   text-align: center;
   margin-top: 10px;
+  word-break: break-word;
 }
 .content-row {
   display: flex;
@@ -426,10 +548,13 @@ html, body {
 .subject-info {
   text-align: center;
 }
+.left-details {
+  text-align: left;
+}
 .right-panel {
   flex: 1;
   font-size: 20px;
-  overflow-y: auto;
+  overflow-x: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -437,7 +562,6 @@ html, body {
 .right-panel h3 {
   text-align: center;
 }
-/* 表格占满整个 right-panel */
 .right-panel .exam-list table {
   width: 100%;
   max-width: 100%;
@@ -451,10 +575,8 @@ html, body {
   border: 1px solid #444;
   text-align: center;
 }
-/* 修改科目名称样式：使用华文新魏字体，调大且撑满单元格 */
 .subject-cell {
   font-family: "华文新魏", "STXinwei", sans-serif;
-  font-size: 40px;
   font-weight: bold;
   padding: 20px;
   display: flex;
@@ -471,11 +593,16 @@ html, body {
   border-top: 1px solid #666;
   user-select: none;
 }
-
 /* 状态样式 */
 .status-notstarted {
   color: #000;
   background-color: #ffe4b5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.status-waiting {
+  color: #fff;
+  background-color: #1e90ff;
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -491,13 +618,18 @@ html, body {
   padding: 4px 8px;
   border-radius: 4px;
 }
-.status-rest {
-  color: #fff;
-  background-color: #444;
+.status-imminent {
+  color: #000;
+  background-color: #f0e68c;
   padding: 4px 8px;
   border-radius: 4px;
 }
-/* 提示所有考试结束的样式：居中、较大 */
+.status-break {
+  color: #fff;
+  background-color: #8A2BE2;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
 .all-ended-message {
   text-align: center;
   font-size: 48px;
@@ -505,50 +637,77 @@ html, body {
   margin: 100px 0;
 }
 
-/* 提醒消息 */
-.flash-message {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 0, 0, 0.8);
-  padding: 10px 20px;
-  font-size: 24px;
-  color: #fff;
-  border-radius: 5px;
-  z-index: 2000;
-}
+/* 通知提示样式 */
 .flash-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 0, 0, 0.3);
-  border-radius: 50%;
-  animation: flashExpand 3s forwards;
-  pointer-events: none;
-  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: flashFull 2s linear 0s 3;
+  z-index: 3000;
 }
-@keyframes flashExpand {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-  100% {
-    width: 200vw;
-    height: 200vw;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-  }
+.flash-overlay .flash-text {
+  color: white;
+  font-size: 48px;
+  animation: flashText 2s linear 0s 3;
+}
+.flash-top {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: red;
+  color: white;
+  font-size: 24px;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 10px;
+  z-index: 3000;
+  animation: moveUpShrink 0.8s ease-out forwards;
 }
 
-/* 响应式：小屏幕下堆叠显示 */
+/* 动画关键帧 */
+@keyframes flashFull {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes flashText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes moveUpShrink {
+  from { top: 50%; transform: translate(-50%, -50%) scale(1); }
+  to { top: 0; transform: translate(-50%, 0) scale(0.7); }
+}
+
+/* 响应式设计增强 */
 @media (max-width: 768px) {
-  .content-row {
-    flex-direction: column;
-  }
+  .content-row { flex-direction: column; }
+  .big-clock { font-size: 80px; }
+  .exam-title { font-size: 24px; }
+  .global-announcement { font-size: 20px; }
+  .subject-info, .left-panel { font-size: 18px; }
+  .right-panel { font-size: 16px; }
+  .flash-text { font-size: 32px; }
+}
+@media (max-width: 480px) {
+  .big-clock { font-size: 60px; }
+  .exam-title { font-size: 20px; }
+  .global-announcement { font-size: 18px; }
+  .subject-info, .left-panel { font-size: 16px; }
+  .right-panel { font-size: 14px; }
+  .flash-text { font-size: 28px; }
+}
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: hidden;
 }
 </style>
